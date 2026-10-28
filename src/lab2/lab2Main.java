@@ -1,5 +1,6 @@
 package lab2;
 
+import lab1.Account;
 import lab1.Customer;
 import lab1.SavingsAccount;
 import lab1.WalletAccount;
@@ -96,6 +97,18 @@ public class lab2Main {
         System.out.println(accountDAO.findById("W1"));
         System.out.println(accountDAO.findById("S1"));
         System.out.println(accountDAO.findById("W99"));
+
+
+
+        System.out.println("\n=== CUSTOM: Miracle's accounts (C1) ===");
+        for (Account account : accountDAO.findByCustomerId("C1")) {
+            System.out.println(account);
+        }
+
+        System.out.println("\n=== CUSTOM: Kian's accounts (C2) ===");
+        for (Account account : accountDAO.findByCustomerId("C2")) {
+            System.out.println(account);
+        }
     }
 
 }

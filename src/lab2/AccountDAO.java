@@ -1,6 +1,7 @@
 package lab2;
 import java.sql.ResultSet;
-
+import java.util.ArrayList;
+import java.util.List;
 import lab1.Account;
 import lab1.SavingsAccount;
 import lab1.WalletAccount;
@@ -81,5 +82,42 @@ public class AccountDAO {
 
             return null;   // no account with this ID
         }
+
+    }
+    // CUSTOM QUERY: find all accounts that belong to one customer
+    public List<Account> findByCustomerId(String customerId) throws SQLException {
+        String selectsql = "SELECT id, customer_id, account_type, balance, "
+                + "transfer_limit, withdrawal_limit, withdrawal_fee FROM accounts "
+                + "WHERE customer_id = ? ORDER BY id";
+        List<Account> accounts = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(selectsql)) {
+
+            statement.setString(1, customerId);
+
+            ResultSet result = statement.executeQuery();
+
+            while (result.next()) {
+                String accountType = result.getString("account_type");
+
+                if (accountType.equals("WALLET")) {
+                    accounts.add(new WalletAccount(
+                            result.getString("id"),
+                            result.getString("customer_id"),
+                            result.getDouble("balance"),
+                            result.getDouble("transfer_limit")));
+                } else {
+                    accounts.add(new SavingsAccount(
+                            result.getString("id"),
+                            result.getString("customer_id"),
+                            result.getDouble("balance"),
+                            result.getDouble("withdrawal_limit"),
+                            result.getDouble("withdrawal_fee")));
+                }
+            }
+        }
+
+        return accounts;
     }
 }
