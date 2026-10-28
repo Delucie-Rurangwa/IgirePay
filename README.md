@@ -1,3 +1,5 @@
+BackEnd Phase 1 Capstone: a console-based digital wallet built with Java, JDBC and PostgreSQL.
+
 ## Lab 1: Object-Oriented Design in Action
 
 Run: `lab1.lab1Main`
