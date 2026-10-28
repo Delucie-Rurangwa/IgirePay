@@ -5,6 +5,8 @@ import lab1.Customer;
 import lab1.SavingsAccount;
 import lab1.WalletAccount;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class lab2Main {
@@ -121,8 +123,26 @@ public class lab2Main {
 
             // Reset W1 so this test gives the same result every time
             accountDAO.updateBalance("W1", 50000);
+
         }
+           }
+
+    // DELETE: remove an account, but only if it is inactive
+    // (zero balance and no transactions)
+    public boolean deleteInactive(String accountId) throws SQLException {
+        String deletesql = "DELETE FROM accounts "
+                + "WHERE id = ? AND balance = 0 "
+                + "AND NOT EXISTS (SELECT 1 FROM transactions WHERE account_id = accounts.id)";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(deletesql)) {
+
+            statement.setString(1, accountId);
+
+            int rowsDeleted = statement.executeUpdate();
+            return rowsDeleted == 1;
+        }
+    }
     }
 
 
-}
