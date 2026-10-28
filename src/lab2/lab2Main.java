@@ -1,4 +1,68 @@
 package lab2;
 
+import lab1.Customer;
+
+import java.sql.SQLException;
+
 public class lab2Main {
+    public static void main(String[] args) throws SQLException {
+
+        CustomerDAO customerDAO = new CustomerDAO();
+
+        // ===== CREATE =====
+        System.out.println("=== CREATE ===");
+        if (customerDAO.findById("C1") == null) {
+            customerDAO.create(new Customer("C1", "Miracle Uwase", "miracle@gmail.com", "0788000001"));
+            System.out.println("Miracle saved");
+        } else {
+            System.out.println("Miracle already exists");
+        }
+        if (customerDAO.findById("C2") == null) {
+            customerDAO.create(new Customer("C2", "Kian Byiza", "kian@gmail.com", "0788000002"));
+            System.out.println("Kian saved");
+        } else {
+            System.out.println("Kian already exists");
+        }
+
+        // ===== READ one =====
+        System.out.println("\n=== READ: find C1 ===");
+        System.out.println(customerDAO.findById("C1"));
+
+        System.out.println("\n=== READ: find C99 (doesn't exist) ===");
+        System.out.println(customerDAO.findById("C99"));
+
+        // ===== READ all =====
+        System.out.println("\n=== READ: all customers ===");
+        for (Customer customer : customerDAO.findAll()) {
+            System.out.println(customer);
+        }
+
+        // ===== UPDATE =====
+        System.out.println("\n=== UPDATE Kian's email ===");
+        Customer kian = customerDAO.findById("C2");
+        kian.setCustomerEmail("kian.byiza@gmail.com");
+        System.out.println("Updated? " + customerDAO.update(kian));
+        System.out.println(customerDAO.findById("C2"));
+
+        System.out.println("\n=== UPDATE a customer that doesn't exist ===");
+        Customer ghost = new Customer("C99", "Nobody", "nobody@gmail.com", "0700000000");
+        System.out.println("Updated? " + customerDAO.update(ghost));
+
+        // ===== DELETE =====
+        System.out.println("\n=== DELETE a temporary customer ===");
+        customerDAO.create(new Customer("C3", "Test User", "test@gmail.com", "0788000003"));
+        System.out.println("Before delete: " + customerDAO.findById("C3"));
+        System.out.println("Deleted? " + customerDAO.delete("C3"));
+        System.out.println("After delete: " + customerDAO.findById("C3"));
+
+        System.out.println("\n=== DELETE a customer that doesn't exist ===");
+        System.out.println("Deleted? " + customerDAO.delete("C99"));
+
+        // ===== CUSTOM QUERY =====
+        System.out.println("\n=== CUSTOM: find by phone number ===");
+        System.out.println(customerDAO.findByPhone("0788000001"));
+
+        System.out.println("\n=== CUSTOM: phone number not registered ===");
+        System.out.println(customerDAO.findByPhone("0799999999"));
+    }
 }
