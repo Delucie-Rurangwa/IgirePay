@@ -1,5 +1,5 @@
 package lab2;
-
+import java.time.LocalDate;
 import lab1.Transaction;
 
 import java.sql.*;
@@ -112,5 +112,32 @@ public class TransactionDAO {
             int rowsDeleted = statement.executeUpdate();
             return rowsDeleted == 1;
         }
+    }
+
+    // CUSTOM QUERY: all transactions on one day
+    public List<Transaction> findByDate(LocalDate date) throws SQLException {
+        String selectsql = "SELECT id, reference_id, transaction_type, amount, created_at "
+                + "FROM transactions WHERE created_at::date = ? ORDER BY created_at";
+        List<Transaction> transactions = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(selectsql)) {
+
+            statement.setDate(1, java.sql.Date.valueOf(date));
+
+            ResultSet result = statement.executeQuery();
+
+            while (result.next()) {
+                Transaction transaction = new Transaction(
+                        result.getString("id"),
+                        result.getString("reference_id"),
+                        result.getDouble("amount"),
+                        result.getString("transaction_type"));
+                transaction.setTimestamp(result.getTimestamp("created_at").toLocalDateTime());
+                transactions.add(transaction);
+            }
+        }
+
+        return transactions;
     }
 }
