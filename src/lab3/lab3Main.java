@@ -7,7 +7,6 @@ import lab1.Transaction;
 import lab1.WalletAccount;
 import lab2.AccountDAO;
 import lab2.CustomerDAO;
-import lab2.PaymentService;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -18,7 +17,7 @@ public class lab3Main {
     private static Scanner scanner = new Scanner(System.in);
     private static CustomerDAO customerDAO = new CustomerDAO();
     private static AccountDAO accountDAO = new AccountDAO();
-    private static PaymentService paymentService = new PaymentService();
+    private static TransactionService transactionService = new TransactionService();
 
     public static void main(String[] args) {
         boolean running = true;
@@ -45,10 +44,25 @@ public class lab3Main {
                 } else {
                     System.out.println("Invalid option, please try again");
                 }
-            } catch (SQLException e) {
-                System.out.println("Database error: " + e.getMessage());
+
+            } catch (InvalidAmountException e) {
+                System.out.println("Invalid amount: " + e.getMessage());
+            } catch (InvalidAccountException e) {
+                System.out.println("Invalid account: " + e.getMessage());
+            } catch (DuplicateTransactionException e) {
+                System.out.println("Duplicate request rejected: " + e.getMessage());
+            } catch (InsufficientBalanceException e) {
+                System.out.println("Insufficient balance: " + e.getMessage());
+            } catch (PaymentException e) {
+                System.out.println("Transaction failed: " + e.getMessage());
             } catch (NumberFormatException e) {
                 System.out.println("Invalid number, please enter digits only (for example 5000)");
+            } catch (SQLException e) {
+                if (e.getSQLState() != null && e.getSQLState().startsWith("08")) {
+                    System.out.println("Cannot connect to the database. Make sure PostgreSQL is running.");
+                } else {
+                    System.out.println("Database error: " + e.getMessage());
+                }
             }
         }
     }
@@ -271,7 +285,7 @@ public class lab3Main {
     }
 
     // ===== TRANSACTION MANAGEMENT =====
-    private static void transactionMenu() throws SQLException {
+    private static void transactionMenu() throws SQLException, PaymentException {
         boolean inMenu = true;
 
         while (inMenu) {
@@ -300,7 +314,7 @@ public class lab3Main {
         }
     }
 
-    private static void deposit() throws SQLException {
+    private static void deposit() throws SQLException, PaymentException {
         System.out.print("Account ID: ");
         String accountId = scanner.nextLine();
         System.out.print("Amount: ");
@@ -308,14 +322,11 @@ public class lab3Main {
         System.out.print("Reference ID: ");
         String referenceId = scanner.nextLine();
 
-        if (paymentService.deposit(accountId, amount, referenceId)) {
-            System.out.println("Deposit successful. New balance: " + accountDAO.findById(accountId).getBalance());
-        } else {
-            System.out.println("Deposit not completed");
-        }
+        transactionService.deposit(accountId, amount, referenceId);
+        System.out.println("Deposit successful. New balance: " + accountDAO.findById(accountId).getBalance());
     }
 
-    private static void withdraw() throws SQLException {
+    private static void withdraw() throws SQLException, PaymentException {
         System.out.print("Account ID: ");
         String accountId = scanner.nextLine();
         System.out.print("Amount: ");
@@ -323,14 +334,11 @@ public class lab3Main {
         System.out.print("Reference ID: ");
         String referenceId = scanner.nextLine();
 
-        if (paymentService.withdraw(accountId, amount, referenceId)) {
-            System.out.println("Withdrawal successful. New balance: " + accountDAO.findById(accountId).getBalance());
-        } else {
-            System.out.println("Withdrawal not completed");
-        }
+        transactionService.withdraw(accountId, amount, referenceId);
+        System.out.println("Withdrawal successful. New balance: " + accountDAO.findById(accountId).getBalance());
     }
 
-    private static void transfer() throws SQLException {
+    private static void transfer() throws SQLException, PaymentException {
         System.out.print("From account ID: ");
         String fromAccountId = scanner.nextLine();
         System.out.print("To account ID: ");
@@ -340,25 +348,17 @@ public class lab3Main {
         System.out.print("Reference ID: ");
         String referenceId = scanner.nextLine();
 
-        if (paymentService.transfer(fromAccountId, toAccountId, amount, referenceId)) {
-            System.out.println("Transfer successful.");
-            System.out.println(fromAccountId + " balance: " + accountDAO.findById(fromAccountId).getBalance());
-            System.out.println(toAccountId + " balance: " + accountDAO.findById(toAccountId).getBalance());
-        } else {
-            System.out.println("Transfer not completed");
-        }
+        transactionService.transfer(fromAccountId, toAccountId, amount, referenceId);
+        System.out.println("Transfer successful.");
+        System.out.println(fromAccountId + " balance: " + accountDAO.findById(fromAccountId).getBalance());
+        System.out.println(toAccountId + " balance: " + accountDAO.findById(toAccountId).getBalance());
     }
 
-    private static void viewTransactionHistory() throws SQLException {
+    private static void viewTransactionHistory() throws SQLException, PaymentException {
         System.out.print("Account ID: ");
         String accountId = scanner.nextLine();
 
-        if (accountDAO.findById(accountId) == null) {
-            System.out.println("No account found with ID " + accountId);
-            return;
-        }
-
-        List<Transaction> history = paymentService.getTransactionHistory(accountId);
+        List<Transaction> history = transactionService.getTransactionHistory(accountId);
         if (history.isEmpty()) {
             System.out.println("No transactions yet for " + accountId);
         } else {
