@@ -4,7 +4,7 @@ import lab1.Account;
 import lab1.Customer;
 import lab1.SavingsAccount;
 import lab1.WalletAccount;
-
+import lab1.Transaction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -142,6 +142,12 @@ public class lab2Main {
             int rowsDeleted = statement.executeUpdate();
             return rowsDeleted == 1;
         }
+        // ===== TRANSACTION DAO =====
+        TransactionDAO transactionDAO = new TransactionDAO();
+
+        System.out.println("\n=== CREATE: record a transaction for W1 ===");
+        Transaction tx = new Transaction("TXN-" + System.currentTimeMillis(), "REF-TEST", 5000, "DEPOSIT");
+        System.out.println("Saved? " + transactionDAO.create("W1", tx));
     }
     }
 
