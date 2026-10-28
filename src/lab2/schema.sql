@@ -15,7 +15,7 @@ CREATE TABLE accounts (
                           balance           NUMERIC(15,2) NOT NULL DEFAULT 0 CHECK (balance >= 0),
                           transfer_limit    NUMERIC(15,2),
                           withdrawal_limit  NUMERIC(15,2),
-                          withdrawal_fee    NUMERIC(15,2),
+                          withdrawal_fee    NUMERIC(15,2),    pin_hash          VARCHAR(64),
                           created_at        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
