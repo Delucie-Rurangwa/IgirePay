@@ -2,6 +2,8 @@ package lab3;
 
 import lab1.Account;
 import lab1.Customer;
+import lab1.SavingsAccount;
+import lab1.WalletAccount;
 import lab2.AccountDAO;
 import lab2.CustomerDAO;
 
@@ -31,7 +33,7 @@ public class lab3Main {
                 if (choice.equals("1")) {
                     customerMenu();
                 } else if (choice.equals("2")) {
-                    System.out.println("Account Management: coming next");
+                    accountMenu();
                 } else if (choice.equals("3")) {
                     System.out.println("Transaction Management: coming next");
                 } else if (choice.equals("0")) {
@@ -42,6 +44,8 @@ public class lab3Main {
                 }
             } catch (SQLException e) {
                 System.out.println("Database error: " + e.getMessage());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number, please enter digits only (for example 5000)");
             }
         }
     }
@@ -145,6 +149,121 @@ public class lab3Main {
             for (Account account : accounts) {
                 System.out.println(account);
             }
+        }
+    }
+
+    // ===== ACCOUNT MANAGEMENT =====
+    private static void accountMenu() throws SQLException {
+        boolean inMenu = true;
+
+        while (inMenu) {
+            System.out.println("\n--- Account Management ---");
+            System.out.println("1. Create wallet account");
+            System.out.println("2. Create savings account");
+            System.out.println("3. View account balance");
+            System.out.println("4. Delete inactive account");
+            System.out.println("0. Back");
+            System.out.print("Choose an option: ");
+            String choice = scanner.nextLine();
+
+            if (choice.equals("1")) {
+                createWallet();
+            } else if (choice.equals("2")) {
+                createSavings();
+            } else if (choice.equals("3")) {
+                viewBalance();
+            } else if (choice.equals("4")) {
+                deleteInactiveAccount();
+            } else if (choice.equals("0")) {
+                inMenu = false;
+            } else {
+                System.out.println("Invalid option, please try again");
+            }
+        }
+    }
+
+    private static void createWallet() throws SQLException {
+        System.out.print("New account ID: ");
+        String accountId = scanner.nextLine();
+        if (accountDAO.findById(accountId) != null) {
+            System.out.println("An account with ID " + accountId + " already exists");
+            return;
+        }
+
+        System.out.print("Customer ID: ");
+        String customerId = scanner.nextLine();
+        if (customerDAO.findById(customerId) == null) {
+            System.out.println("No customer found with ID " + customerId);
+            return;
+        }
+
+        System.out.print("Opening balance: ");
+        double balance = Double.parseDouble(scanner.nextLine());
+        System.out.print("Transfer limit: ");
+        double transferLimit = Double.parseDouble(scanner.nextLine());
+
+        if (accountDAO.create(new WalletAccount(accountId, customerId, balance, transferLimit))) {
+            System.out.println("Wallet account created: " + accountDAO.findById(accountId));
+        } else {
+            System.out.println("Account creation failed");
+        }
+    }
+
+    private static void createSavings() throws SQLException {
+        System.out.print("New account ID: ");
+        String accountId = scanner.nextLine();
+        if (accountDAO.findById(accountId) != null) {
+            System.out.println("An account with ID " + accountId + " already exists");
+            return;
+        }
+
+        System.out.print("Customer ID: ");
+        String customerId = scanner.nextLine();
+        if (customerDAO.findById(customerId) == null) {
+            System.out.println("No customer found with ID " + customerId);
+            return;
+        }
+
+        System.out.print("Opening balance: ");
+        double balance = Double.parseDouble(scanner.nextLine());
+        System.out.print("Withdrawal limit: ");
+        double withdrawalLimit = Double.parseDouble(scanner.nextLine());
+        System.out.print("Withdrawal fee: ");
+        double withdrawalFee = Double.parseDouble(scanner.nextLine());
+
+        if (accountDAO.create(new SavingsAccount(accountId, customerId, balance, withdrawalLimit, withdrawalFee))) {
+            System.out.println("Savings account created: " + accountDAO.findById(accountId));
+        } else {
+            System.out.println("Account creation failed");
+        }
+    }
+
+    private static void viewBalance() throws SQLException {
+        System.out.print("Account ID: ");
+        String accountId = scanner.nextLine();
+
+        Account account = accountDAO.findById(accountId);
+        if (account == null) {
+            System.out.println("No account found with ID " + accountId);
+        } else {
+            System.out.println("Balance of " + accountId + ": " + account.getBalance());
+        }
+    }
+
+    private static void deleteInactiveAccount() throws SQLException {
+        System.out.print("Account ID: ");
+        String accountId = scanner.nextLine();
+
+        if (accountDAO.findById(accountId) == null) {
+            System.out.println("No account found with ID " + accountId);
+            return;
+        }
+
+        if (accountDAO.deleteInactive(accountId)) {
+            System.out.println("Account " + accountId + " deleted");
+        } else {
+            System.out.println("Account " + accountId + " is still active (it has money or transaction history) "
+                    + "and cannot be deleted");
         }
     }
 }
