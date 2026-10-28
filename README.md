@@ -79,3 +79,47 @@ customer can retry.
 **Known limitation:** each DAO call uses its own connection, so a transfer's changes are
 not saved as a single unit. Adding JDBC transactions (the rollback bonus challenge)
 would fix this.
+
+## Lab 3: Console-Based Payment Management Application
+
+Run: `lab3.lab3Main`
+
+Requires the Lab 2 database setup. The schema in `src/lab2/schema.sql` includes the
+`pin_hash` column used for PINs.
+
+### Exercise 3.1: Menu-driven application
+| Menu | Features |
+|---|---|
+| Customer Management | Register customer, update customer information, view customer accounts |
+| Account Management | Create wallet, create savings, view balance, delete inactive account, create PIN, change PIN |
+| Transaction Management | Deposit, withdraw, transfer, view transaction history |
+| Reports | Export history to CSV, daily summary, customer statement |
+
+Every transaction requires a reference ID. Reusing a reference ID is rejected as a
+duplicate, so a retried request is never processed twice.
+
+### Exercise 3.2: Exception handling
+Custom exceptions extend a common `PaymentException`:
+- `InvalidAmountException`: amount is zero or negative
+- `InvalidAccountException`: account ID does not exist
+- `DuplicateTransactionException`: reference ID already processed
+- `InsufficientBalanceException`: balance too low (including the savings fee)
+- `TransactionFailedException`: rejected by an account rule (limits, savings transfers)
+
+Database errors are handled separately: connection failures (SQL state `08xxx`) show
+a "cannot connect" message; other SQL errors show the database message. Invalid
+numbers, invalid dates and file errors are also caught, so the app never crashes.
+
+### Exercise 3.3: Reports
+- **CSV export:** writes an account's history to `transactions_<accountId>.csv`
+- **Daily summary:** count and total of deposits, withdrawals and transfers for a date
+- **Customer statement:** customer details, all accounts, balances and full history
+
+### Exercise 3.4: PIN authentication
+- PINs are exactly 4 digits.
+- Withdrawals and transfers require the source account's PIN. Deposits do not.
+- PINs are never stored as plain text: only a SHA-256 hash of `accountId:PIN` is saved.
+- Changing a PIN requires the current PIN.
+
+**Limitation:** the PIN is visible while typing, because hidden input
+(`System.console().readPassword()`) does not work in IntelliJ's run window.
