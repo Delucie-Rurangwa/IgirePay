@@ -120,4 +120,18 @@ public class AccountDAO {
 
         return accounts;
     }
+    // UPDATE: save a new balance for an account
+    public boolean updateBalance(String accountId, double newBalance) throws SQLException {
+        String updatesql = "UPDATE accounts SET balance = ? WHERE id = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(updatesql)) {
+
+            statement.setDouble(1, newBalance);
+            statement.setString(2, accountId);
+
+            int rowsUpdated = statement.executeUpdate();
+            return rowsUpdated == 1;
+        }
+    }
 }

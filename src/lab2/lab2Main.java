@@ -69,7 +69,6 @@ public class lab2Main {
         System.out.println(customerDAO.findByPhone("0799999999"));
 
 
-
         // ===== ACCOUNT DAO =====
         AccountDAO accountDAO = new AccountDAO();
 
@@ -79,7 +78,7 @@ public class lab2Main {
         System.out.println("W2 saved? " + accountDAO.create(new WalletAccount("W2", "C2", 10000, 100000)));
 
         // ===== ACCOUNT DAO =====
-        AccountDAO accountdao= new AccountDAO();
+        AccountDAO accountdao = new AccountDAO();
 
         System.out.println("\n=== CREATE accounts ===");
         if (accountDAO.findById("W1") == null) {
@@ -99,7 +98,6 @@ public class lab2Main {
         System.out.println(accountDAO.findById("W99"));
 
 
-
         System.out.println("\n=== CUSTOM: Miracle's accounts (C1) ===");
         for (Account account : accountDAO.findByCustomerId("C1")) {
             System.out.println(account);
@@ -108,7 +106,23 @@ public class lab2Main {
         System.out.println("\n=== CUSTOM: Kian's accounts (C2) ===");
         for (Account account : accountDAO.findByCustomerId("C2")) {
             System.out.println(account);
+
+
+
+            System.out.println("\n=== UPDATE: deposit 20000 into W1 ===");
+            Account w1 = accountDAO.findById("W1");                    // 1. load from the database
+            System.out.println("Before: " + w1.getBalance());
+            w1.deposit(20000);                                          // 2. Lab 1 rule changes it in memory
+            accountDAO.updateBalance("W1", w1.getBalance());            // 3. save the new balance
+            System.out.println("After:  " + accountDAO.findById("W1").getBalance());   // 4. reload to confirm
+
+            System.out.println("\n=== UPDATE: account that doesn't exist ===");
+            System.out.println("Updated? " + accountDAO.updateBalance("W99", 1000));
+
+            // Reset W1 so this test gives the same result every time
+            accountDAO.updateBalance("W1", 50000);
         }
     }
+
 
 }
