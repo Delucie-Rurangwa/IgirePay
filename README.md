@@ -1,3 +1,5 @@
+BackEnd Phase 1 Capstone: a secure digital wallet inspired by MTN Mobile Money.
+
 ## Lab 1: Object-Oriented Design in Action
 
 Run: `lab1.lab1Main`
