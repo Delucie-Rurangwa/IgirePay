@@ -3,9 +3,11 @@ package lab3;
 import lab1.Account;
 import lab1.Customer;
 import lab1.SavingsAccount;
+import lab1.Transaction;
 import lab1.WalletAccount;
 import lab2.AccountDAO;
 import lab2.CustomerDAO;
+import lab2.PaymentService;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -16,6 +18,7 @@ public class lab3Main {
     private static Scanner scanner = new Scanner(System.in);
     private static CustomerDAO customerDAO = new CustomerDAO();
     private static AccountDAO accountDAO = new AccountDAO();
+    private static PaymentService paymentService = new PaymentService();
 
     public static void main(String[] args) {
         boolean running = true;
@@ -35,7 +38,7 @@ public class lab3Main {
                 } else if (choice.equals("2")) {
                     accountMenu();
                 } else if (choice.equals("3")) {
-                    System.out.println("Transaction Management: coming next");
+                    transactionMenu();
                 } else if (choice.equals("0")) {
                     running = false;
                     System.out.println("Goodbye!");
@@ -264,6 +267,104 @@ public class lab3Main {
         } else {
             System.out.println("Account " + accountId + " is still active (it has money or transaction history) "
                     + "and cannot be deleted");
+        }
+    }
+
+    // ===== TRANSACTION MANAGEMENT =====
+    private static void transactionMenu() throws SQLException {
+        boolean inMenu = true;
+
+        while (inMenu) {
+            System.out.println("\n--- Transaction Management ---");
+            System.out.println("1. Deposit money");
+            System.out.println("2. Withdraw money");
+            System.out.println("3. Transfer money");
+            System.out.println("4. View transaction history");
+            System.out.println("0. Back");
+            System.out.print("Choose an option: ");
+            String choice = scanner.nextLine();
+
+            if (choice.equals("1")) {
+                deposit();
+            } else if (choice.equals("2")) {
+                withdraw();
+            } else if (choice.equals("3")) {
+                transfer();
+            } else if (choice.equals("4")) {
+                viewTransactionHistory();
+            } else if (choice.equals("0")) {
+                inMenu = false;
+            } else {
+                System.out.println("Invalid option, please try again");
+            }
+        }
+    }
+
+    private static void deposit() throws SQLException {
+        System.out.print("Account ID: ");
+        String accountId = scanner.nextLine();
+        System.out.print("Amount: ");
+        double amount = Double.parseDouble(scanner.nextLine());
+        System.out.print("Reference ID: ");
+        String referenceId = scanner.nextLine();
+
+        if (paymentService.deposit(accountId, amount, referenceId)) {
+            System.out.println("Deposit successful. New balance: " + accountDAO.findById(accountId).getBalance());
+        } else {
+            System.out.println("Deposit not completed");
+        }
+    }
+
+    private static void withdraw() throws SQLException {
+        System.out.print("Account ID: ");
+        String accountId = scanner.nextLine();
+        System.out.print("Amount: ");
+        double amount = Double.parseDouble(scanner.nextLine());
+        System.out.print("Reference ID: ");
+        String referenceId = scanner.nextLine();
+
+        if (paymentService.withdraw(accountId, amount, referenceId)) {
+            System.out.println("Withdrawal successful. New balance: " + accountDAO.findById(accountId).getBalance());
+        } else {
+            System.out.println("Withdrawal not completed");
+        }
+    }
+
+    private static void transfer() throws SQLException {
+        System.out.print("From account ID: ");
+        String fromAccountId = scanner.nextLine();
+        System.out.print("To account ID: ");
+        String toAccountId = scanner.nextLine();
+        System.out.print("Amount: ");
+        double amount = Double.parseDouble(scanner.nextLine());
+        System.out.print("Reference ID: ");
+        String referenceId = scanner.nextLine();
+
+        if (paymentService.transfer(fromAccountId, toAccountId, amount, referenceId)) {
+            System.out.println("Transfer successful.");
+            System.out.println(fromAccountId + " balance: " + accountDAO.findById(fromAccountId).getBalance());
+            System.out.println(toAccountId + " balance: " + accountDAO.findById(toAccountId).getBalance());
+        } else {
+            System.out.println("Transfer not completed");
+        }
+    }
+
+    private static void viewTransactionHistory() throws SQLException {
+        System.out.print("Account ID: ");
+        String accountId = scanner.nextLine();
+
+        if (accountDAO.findById(accountId) == null) {
+            System.out.println("No account found with ID " + accountId);
+            return;
+        }
+
+        List<Transaction> history = paymentService.getTransactionHistory(accountId);
+        if (history.isEmpty()) {
+            System.out.println("No transactions yet for " + accountId);
+        } else {
+            for (Transaction transaction : history) {
+                System.out.println(transaction);
+            }
         }
     }
 }
