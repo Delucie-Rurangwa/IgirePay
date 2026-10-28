@@ -1,4 +1,5 @@
 package lab2;
+import java.sql.ResultSet;
 
 import lab1.Account;
 import lab1.SavingsAccount;
@@ -43,6 +44,42 @@ public class AccountDAO {
 
             int rowsInserted = statement.executeUpdate();
             return rowsInserted == 1;
+
+        }
+    }
+
+    // READ one account by ID
+    public Account findById(String id) throws SQLException {
+        String selectsql = "SELECT id, customer_id, account_type, balance, "
+                + "transfer_limit, withdrawal_limit, withdrawal_fee FROM accounts WHERE id = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(selectsql)) {
+
+            statement.setString(1, id);
+
+            ResultSet result = statement.executeQuery();
+
+            if (result.next()) {
+                String accountType = result.getString("account_type");
+
+                if (accountType.equals("WALLET")) {
+                    return new WalletAccount(
+                            result.getString("id"),
+                            result.getString("customer_id"),
+                            result.getDouble("balance"),
+                            result.getDouble("transfer_limit"));
+                } else {
+                    return new SavingsAccount(
+                            result.getString("id"),
+                            result.getString("customer_id"),
+                            result.getDouble("balance"),
+                            result.getDouble("withdrawal_limit"),
+                            result.getDouble("withdrawal_fee"));
+                }
+            }
+
+            return null;   // no account with this ID
         }
     }
 }

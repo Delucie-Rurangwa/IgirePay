@@ -76,6 +76,26 @@ public class lab2Main {
         System.out.println("W1 saved? " + accountDAO.create(new WalletAccount("W1", "C1", 50000, 100000)));
         System.out.println("S1 saved? " + accountDAO.create(new SavingsAccount("S1", "C1", 200000, 50000, 500)));
         System.out.println("W2 saved? " + accountDAO.create(new WalletAccount("W2", "C2", 10000, 100000)));
+
+        // ===== ACCOUNT DAO =====
+        AccountDAO accountdao= new AccountDAO();
+
+        System.out.println("\n=== CREATE accounts ===");
+        if (accountDAO.findById("W1") == null) {
+            accountDAO.create(new WalletAccount("W1", "C1", 50000, 100000));
+        }
+        if (accountDAO.findById("S1") == null) {
+            accountDAO.create(new SavingsAccount("S1", "C1", 200000, 50000, 500));
+        }
+        if (accountDAO.findById("W2") == null) {
+            accountDAO.create(new WalletAccount("W2", "C2", 10000, 100000));
+        }
+        System.out.println("Accounts ready");
+
+        System.out.println("\n=== READ: find accounts by ID ===");
+        System.out.println(accountDAO.findById("W1"));
+        System.out.println(accountDAO.findById("S1"));
+        System.out.println(accountDAO.findById("W99"));
     }
 
 }
