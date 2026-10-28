@@ -1,6 +1,8 @@
 package lab2;
 
 import lab1.Customer;
+import lab1.SavingsAccount;
+import lab1.WalletAccount;
 
 import java.sql.SQLException;
 
@@ -64,5 +66,16 @@ public class lab2Main {
 
         System.out.println("\n=== CUSTOM: phone number not registered ===");
         System.out.println(customerDAO.findByPhone("0799999999"));
+
+
+
+        // ===== ACCOUNT DAO =====
+        AccountDAO accountDAO = new AccountDAO();
+
+        System.out.println("\n=== CREATE accounts ===");
+        System.out.println("W1 saved? " + accountDAO.create(new WalletAccount("W1", "C1", 50000, 100000)));
+        System.out.println("S1 saved? " + accountDAO.create(new SavingsAccount("S1", "C1", 200000, 50000, 500)));
+        System.out.println("W2 saved? " + accountDAO.create(new WalletAccount("W2", "C2", 10000, 100000)));
     }
+
 }
